@@ -23,7 +23,7 @@ async def image_to_musicxml(file: UploadFile = File(...)):
         musicxml_data = file.read()
 
     # Optionally, clean up the temporary files
-    os.remove("temp_image.png")
-    os.remove("output_file.xml")
+    # os.remove("temp_image.png")
+    # os.remove("output_file.xml")
 
     return {"musicxml": musicxml_data}
