@@ -1,33 +1,29 @@
 from fastapi import FastAPI, UploadFile, File
-from PIL import Image
-import cv2
-import music21
+import subprocess
+import os
+import shutil
 
 app = FastAPI()
 
 @app.post("/image-to-musicxml")
-async def image_to_musicxml(file: UploadFile):
-    # Check if the uploaded file is an image
+async def image_to_musicxml(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
         return {"error": "Please upload a valid image file."}
 
-    # Process the image
-    image = Image.open(file.file)
-    # Convert the image to grayscale
-    grayscale_image = image.convert('L')
-    
-    # Use OpenCV to further process the image as needed
-    # You can apply image processing techniques to extract musical information
+    # Save the uploaded file temporarily
+    with open("temp_image.png", "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
-    # Generate a simple MusicXML with music21
-    score = music21.stream.Score()
-    part = music21.stream.Part()
-    note = music21.note.Note("C4")  # Change this to create your desired music
-    part.append(note)
-    score.insert(0, part)
-    
-    # Convert the MusicXML score to a string
-    musicxml = score.write('musicxml')
+    # Replace 'your_oemer_command' with the actual command to run Oemer
+    # and 'output_file.xml' with the expected output file name
+    subprocess.run(["oemer", "temp_image.png"], check=True)
 
-    return {"musicxml": musicxml}
+    # Read the output MusicXML file
+    with open("temp_image.musicxml", "r") as file:
+        musicxml_data = file.read()
 
+    # Optionally, clean up the temporary files
+    os.remove("temp_image.png")
+    os.remove("output_file.xml")
+
+    return {"musicxml": musicxml_data}
